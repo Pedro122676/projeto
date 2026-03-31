@@ -228,8 +228,14 @@ app.get('/api/stats', async (req, res) => {
   } catch (err) { handleError(res, err, 'GET /api/stats'); }
 });
 
+const path = require('path');
+
+// Servir arquivos estáticos (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, '../')));
+
+// Fallback para SPA
 app.get('/', (req, res) => {
-  res.json({ message: '🚀 Servidor OdontoCare rodando corretamente!' });
+  res.sendFile(path.join(__dirname, '../index.html'));
 });
 
 const PORT = 3000;
