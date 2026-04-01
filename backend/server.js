@@ -1,34 +1,47 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+
+// Middleware de logging para POST e PUT
+app.use((req, res, next) => {
+  if (['POST', 'PUT'].includes(req.method) && req.body) {
+    console.log(`📨 ${req.method} ${req.path}`, req.body);
+  }
+  next();
+});
+
+// ==================== CONEXÃO COM O BANCO ====================
 const pool = mysql.createPool({
   host: 'localhost',
   user: 'root',
-  password: '',                    
+  password: '',                    // ← Alterar se você tiver senha no MySQL
   database: 'odontocare',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 });
 
+// ==================== TRATAMENTO DE ERROS ====================
 const handleError = (res, err, route = 'Desconhecida') => {
-  console.error(`❌ ERRO na rota ${route}`);
-  console.error(`Mensagem: ${err.message}`);
+  console.error(`❌ ERRO na rota ${route}:`, err.message);
   if (err.code) console.error(`Código: ${err.code}`);
   if (err.sqlMessage) console.error(`SQL: ${err.sqlMessage}`);
 
   res.status(500).json({
     success: false,
-    error: err.message || 'Erro interno no servidor',
-    route: route
+    error: err.message || 'Erro interno no servidor'
   });
 };
 
+// ==================== ROTAS API ====================
+
+// Pacientes
 app.get('/api/pacientes', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM pacientes ORDER BY nome');
@@ -39,6 +52,8 @@ app.get('/api/pacientes', async (req, res) => {
 app.post('/api/pacientes', async (req, res) => {
   const { nome, cpf, telefone } = req.body;
   try {
+    if (!nome || !cpf) return res.status(400).json({ error: 'Nome e CPF são obrigatórios' });
+
     const [result] = await pool.query(
       'INSERT INTO pacientes (nome, cpf, telefone) VALUES (?, ?, ?)', 
       [nome, cpf, telefone || null]
@@ -49,11 +64,10 @@ app.post('/api/pacientes', async (req, res) => {
 
 app.put('/api/pacientes/:id', async (req, res) => {
   const { nome, cpf, telefone } = req.body;
-  const id = req.params.id;
   try {
     const [result] = await pool.query(
       'UPDATE pacientes SET nome = ?, cpf = ?, telefone = ? WHERE id = ?', 
-      [nome, cpf, telefone || null, id]
+      [nome, cpf, telefone || null, req.params.id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Paciente não encontrado' });
     res.json({ success: true });
@@ -68,6 +82,7 @@ app.delete('/api/pacientes/:id', async (req, res) => {
   } catch (err) { handleError(res, err, 'DELETE /api/pacientes/:id'); }
 });
 
+// Consultas
 app.get('/api/consultas', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM consultas ORDER BY data DESC, hora DESC');
@@ -106,6 +121,7 @@ app.delete('/api/consultas/:id', async (req, res) => {
   } catch (err) { handleError(res, err, 'DELETE /api/consultas/:id'); }
 });
 
+// Dentistas
 app.get('/api/dentistas', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM dentistas ORDER BY nome');
@@ -144,6 +160,7 @@ app.delete('/api/dentistas/:id', async (req, res) => {
   } catch (err) { handleError(res, err, 'DELETE /api/dentistas/:id'); }
 });
 
+// Estoque
 app.get('/api/estoque', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM estoque ORDER BY nome');
@@ -182,6 +199,7 @@ app.delete('/api/estoque/:id', async (req, res) => {
   } catch (err) { handleError(res, err, 'DELETE /api/estoque/:id'); }
 });
 
+// Financeiro
 app.get('/api/financeiro', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM financeiro ORDER BY data DESC, id DESC');
@@ -196,10 +214,17 @@ app.post('/api/financeiro', async (req, res) => {
       'INSERT INTO financeiro (tipo, descricao, valor, data) VALUES (?, ?, ?, CURDATE())', 
       [tipo, descricao, valor]
     );
-    res.json({ id: result.insertId, tipo, descricao, valor, data: new Date().toISOString().split('T')[0] });
+    res.json({ 
+      id: result.insertId, 
+      tipo, 
+      descricao, 
+      valor, 
+      data: new Date().toISOString().split('T')[0] 
+    });
   } catch (err) { handleError(res, err, 'POST /api/financeiro'); }
 });
 
+// Estatísticas
 app.get('/api/stats', async (req, res) => {
   try {
     const [pacientes] = await pool.query('SELECT COUNT(*) as total FROM pacientes');
@@ -228,19 +253,21 @@ app.get('/api/stats', async (req, res) => {
   } catch (err) { handleError(res, err, 'GET /api/stats'); }
 });
 
-const path = require('path');
-
-// Servir arquivos estáticos (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, '../')));
+// ==================== SERVIR ARQUIVOS FRONTEND ====================
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Fallback para SPA
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../index.html'));
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'Endpoint não encontrado' });
+  }
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor OdontoCare rodando em http://localhost:${PORT}`);
+  console.log(`📁 Frontend servido da pasta: ${path.join(__dirname, '../public')}`);
 });
 
 // Para rodar o back
