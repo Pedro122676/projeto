@@ -24,7 +24,8 @@ async function initDashboard() {
       tbody.innerHTML = `
         <tr>
           <td colspan="5" class="text-center text-muted py-4">
-            Nenhuma consulta próxima agendada
+            <span>📅 Nenhuma consulta agendada</span><br>
+            <small><a href="consultas.html" class="text-decoration-none">Clique para agendar uma</a></small>
           </td>
         </tr>`;
     } else {
@@ -89,21 +90,27 @@ async function initDashboard() {
       const percSemanal = ((receitaSemanal / metaSemanal) * 100).toFixed(1);
       const percMensal = ((receitaMensal / metaMensal) * 100).toFixed(1);
 
-      const updateMeta = (el, valor, meta, perc) => {
+      const updateMeta = (elId, valor, meta, perc) => {
+        const el = document.getElementById(elId);
         if (el) {
           el.innerHTML = `
-            <small class="text-muted">R$ ${valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</small>
-            <div class="progress mt-2" style="height: 8px;">
-              <div class="progress-bar bg-${perc >= 100 ? 'success' : perc >= 50 ? 'warning' : 'danger'}" style="width: ${Math.min(perc, 100)}%"></div>
+            <div class="mb-2">
+              <strong class="text-success">R$ ${valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</strong>
+              <small class="d-block text-muted">de R$ ${meta.toLocaleString('pt-BR', {maximumFractionDigits: 0})}</small>
             </div>
-            <small class="text-muted">${perc}% de R$ ${meta.toLocaleString('pt-BR', {minimumFractionDigits: 0})}</small>
+            <div class="progress" style="height: 12px;">
+              <div class="progress-bar ${perc >= 100 ? 'bg-success' : perc >= 50 ? 'bg-warning' : 'bg-danger'}" style="width: ${Math.min(perc, 100)}%"></div>
+            </div>
+            <small class="text-muted d-block mt-2">${Math.round(perc)}% atingido</small>
           `;
+        } else {
+          console.warn(`Elemento #${elId} não encontrado`);
         }
       };
 
-      updateMeta(document.getElementById('metaHoje'), receitasHoje, metaHoje, percHoje);
-      updateMeta(document.getElementById('metaSemanal'), receitaSemanal, metaSemanal, percSemanal);
-      updateMeta(document.getElementById('metaMensal'), receitaMensal, metaMensal, percMensal);
+      updateMeta('metaHoje', receitasHoje, metaHoje, percHoje);
+      updateMeta('metaSemanal', receitaSemanal, metaSemanal, percSemanal);
+      updateMeta('metaMensal', receitaMensal, metaMensal, percMensal);
     }
 
   } catch (error) {
