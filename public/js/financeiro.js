@@ -8,22 +8,22 @@ async function initFinanceiro() {
       tbody.innerHTML = data.map(f => {
         const data_formatada = f.data ? new Date(f.data).toLocaleDateString('pt-BR') : '-';
         return `
-          <tr style="height: auto;">
-            <td class="ps-4">
-              <span class="badge bg-${f.tipo === 'Receita' ? 'success' : 'danger'} fs-6 px-3 py-2">
+          <tr class="align-middle" style="height: 60px;">
+            <td class="py-3">
+              <span class="badge bg-${f.tipo === 'Receita' ? 'success' : 'danger'} fs-6">
                 ${f.tipo}
               </span>
             </td>
-            <td class="ps-4 fw-500">
-              ${f.descricao}
+            <td class="py-3">
+              <span class="text-dark fw-500">${f.descricao}</span>
             </td>
-            <td class="ps-4 text-end pe-4">
-              <span class="${f.tipo === 'Receita' ? 'text-success' : 'text-danger'} fw-bold" style="font-size: 1.1rem;">
-                ${f.tipo === 'Receita' ? '+' : '-'} R$ ${parseFloat(f.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            <td class="py-3 text-end">
+              <span class="${f.tipo === 'Receita' ? 'text-success' : 'text-danger'} fw-bold fs-5">
+                R$ ${parseFloat(f.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
             </td>
-            <td class="ps-4 text-muted">
-              ${data_formatada}
+            <td class="py-3">
+              <span class="text-muted">${data_formatada}</span>
             </td>
           </tr>
         `;
