@@ -8,27 +8,31 @@ async function initDashboard() {
   }
 
   try {
-    // Carregar consultas de hoje
+    // Carregar consultas próximas (não só de hoje)
     const consultas = await fetchJson(`${API_URL}/consultas`);
-    const hoje = new Date().toISOString().split('T')[0];
+    const hoje = new Date();
+    
+    const proximasConsultas = consultas
+      .filter(c => new Date(c.data) >= new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()))
+      .sort((a, b) => {
+        const dateA = new Date(a.data + ' ' + a.hora);
+        const dateB = new Date(b.data + ' ' + b.hora);
+        return dateA - dateB;
+      });
 
-    const hojeConsultas = consultas
-      .filter(c => c.data === hoje)
-      .sort((a, b) => a.hora.localeCompare(b.hora));
-
-    if (hojeConsultas.length === 0) {
+    if (proximasConsultas.length === 0) {
       tbody.innerHTML = `
         <tr>
           <td colspan="5" class="text-center text-muted py-4">
-            Nenhuma consulta agendada para hoje
+            Nenhuma consulta próxima agendada
           </td>
         </tr>`;
     } else {
-      tbody.innerHTML = hojeConsultas.slice(0, 5).map(c => `
+      tbody.innerHTML = proximasConsultas.slice(0, 5).map(c => `
         <tr>
           <td>${c.paciente}</td>
           <td>${c.dentista}</td>
-          <td>${c.data}</td>
+          <td>${new Date(c.data).toLocaleDateString('pt-BR')}</td>
           <td>${c.hora}</td>
           <td>
             <span class="badge bg-${c.status === 'Realizada' ? 'success' : 
@@ -40,17 +44,31 @@ async function initDashboard() {
       `).join('');
     }
 
-    // Calcular saldo financeiro
+    // Calcular saldo financeiro e gráficos
     if (saldoEl) {
       const financeiro = await fetchJson(`${API_URL}/financeiro`);
       
       let receitas = 0;
       let despesas = 0;
+      let receitasHoje = 0;
+      let receitaSemanal = 0;
+      let receitaMensal = 0;
+
+      const hoje_date = new Date();
+      const dataHoje = hoje_date.toISOString().split('T')[0];
+      const dataUmaSemana = new Date(hoje_date.getTime() - 7*24*60*60*1000).toISOString().split('T')[0];
+      const dataMes = new Date(hoje_date.getFullYear(), hoje_date.getMonth(), 1).toISOString().split('T')[0];
 
       financeiro.forEach(f => {
         const valor = parseFloat(f.valor) || 0;
-        if (f.tipo === 'Receita') receitas += valor;
-        else if (f.tipo === 'Despesa') despesas += valor;
+        if (f.tipo === 'Receita') {
+          receitas += valor;
+          if (f.data === dataHoje) receitasHoje += valor;
+          if (f.data >= dataUmaSemana) receitaSemanal += valor;
+          if (f.data >= dataMes) receitaMensal += valor;
+        } else if (f.tipo === 'Despesa') {
+          despesas += valor;
+        }
       });
 
       const saldo = receitas - despesas;
@@ -61,6 +79,31 @@ async function initDashboard() {
       })}`;
 
       saldoEl.className = `display-6 fw-bold ${saldo >= 0 ? 'text-success' : 'text-danger'}`;
+
+      // Atualizar cards de metas
+      const metaHoje = 5000; // R$ 5000 por dia
+      const metaSemanal = 30000; // R$ 30000 por semana
+      const metaMensal = 120000; // R$ 120000 por mês
+
+      const percHoje = ((receitasHoje / metaHoje) * 100).toFixed(1);
+      const percSemanal = ((receitaSemanal / metaSemanal) * 100).toFixed(1);
+      const percMensal = ((receitaMensal / metaMensal) * 100).toFixed(1);
+
+      const updateMeta = (el, valor, meta, perc) => {
+        if (el) {
+          el.innerHTML = `
+            <small class="text-muted">R$ ${valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</small>
+            <div class="progress mt-2" style="height: 8px;">
+              <div class="progress-bar bg-${perc >= 100 ? 'success' : perc >= 50 ? 'warning' : 'danger'}" style="width: ${Math.min(perc, 100)}%"></div>
+            </div>
+            <small class="text-muted">${perc}% de R$ ${meta.toLocaleString('pt-BR', {minimumFractionDigits: 0})}</small>
+          `;
+        }
+      };
+
+      updateMeta(document.getElementById('metaHoje'), receitasHoje, metaHoje, percHoje);
+      updateMeta(document.getElementById('metaSemanal'), receitaSemanal, metaSemanal, percSemanal);
+      updateMeta(document.getElementById('metaMensal'), receitaMensal, metaMensal, percMensal);
     }
 
   } catch (error) {

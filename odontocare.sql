@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 30/03/2026 às 17:29
+-- Tempo de geração: 01/04/2026 às 20:26
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -33,15 +33,10 @@ CREATE TABLE `consultas` (
   `dentista` varchar(255) NOT NULL,
   `data` date NOT NULL,
   `hora` time NOT NULL,
-  `status` enum('Agendada','Confirmada','Realizada','Cancelada') DEFAULT 'Agendada'
+  `status` enum('Agendada','Confirmada','Realizada','Cancelada') DEFAULT 'Agendada',
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Despejando dados para a tabela `consultas`
---
-
-INSERT INTO `consultas` (`id`, `paciente`, `dentista`, `data`, `hora`, `status`) VALUES
-(5, 'Pedro Teste', 'Dr. Ana Costa', '2026-04-10', '09:30:00', 'Agendada');
 
 -- --------------------------------------------------------
 
@@ -53,20 +48,19 @@ CREATE TABLE `dentistas` (
   `id` int(11) NOT NULL,
   `nome` varchar(255) NOT NULL,
   `cro` varchar(20) NOT NULL,
-  `especialidade` varchar(100) DEFAULT NULL
+  `especialidade` varchar(100) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------
-
---
--- Estrutura para tabela `estoque`
---
 
 CREATE TABLE `estoque` (
   `id` int(11) NOT NULL,
   `nome` varchar(255) NOT NULL,
   `quantidade` int(11) DEFAULT 0,
-  `minimo` int(11) DEFAULT 5
+  `minimo` int(11) DEFAULT 5,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -80,7 +74,8 @@ CREATE TABLE `financeiro` (
   `tipo` enum('Receita','Despesa') NOT NULL,
   `descricao` varchar(255) NOT NULL,
   `valor` decimal(10,2) NOT NULL,
-  `data` date DEFAULT curdate()
+  `data` date DEFAULT curdate(),
+  `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -93,15 +88,10 @@ CREATE TABLE `pacientes` (
   `id` int(11) NOT NULL,
   `nome` varchar(255) NOT NULL,
   `cpf` varchar(14) NOT NULL,
-  `telefone` varchar(20) DEFAULT NULL
+  `telefone` varchar(20) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Despejando dados para a tabela `pacientes`
---
-
-INSERT INTO `pacientes` (`id`, `nome`, `cpf`, `telefone`) VALUES
-(5, 'Pedro Teste', '111.222.333-44', '(11) 99999-8888');
 
 --
 -- Índices para tabelas despejadas
@@ -147,7 +137,7 @@ ALTER TABLE `pacientes`
 -- AUTO_INCREMENT de tabela `consultas`
 --
 ALTER TABLE `consultas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de tabela `dentistas`
@@ -165,13 +155,13 @@ ALTER TABLE `estoque`
 -- AUTO_INCREMENT de tabela `financeiro`
 --
 ALTER TABLE `financeiro`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de tabela `pacientes`
 --
 ALTER TABLE `pacientes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
