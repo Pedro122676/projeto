@@ -39,7 +39,8 @@ const logout = () => {
 // Bloqueia acesso sem login
 function bloquearSemLogin() {
   const usuarioLogado = obterUsuarioLogado();
-  const estaNaLogin = window.location.pathname.includes('login.html');
+  const urlAtual = window.location.pathname.toLowerCase();
+  const estaNaLogin = urlAtual.includes('login.html') || urlAtual === '/' || urlAtual === '';
 
   if (!usuarioLogado && !estaNaLogin) {
     window.location.href = 'login.html';
@@ -91,10 +92,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (usuarioEncontrado) {
         salvarUsuarioLogado(usuarioEncontrado);
-        showToast(`Bem-vindo, ${usuarioEncontrado.nome}!`, 'success');
+        
+        // Mostrar toast se a função existir
+        if (typeof showToast === 'function') {
+          showToast(`Bem-vindo, ${usuarioEncontrado.nome}!`, 'success');
+        }
+        
+        // Redirecionar após 500ms
         setTimeout(() => {
           window.location.href = 'index.html';
-        }, 800);
+        }, 500);
       } else {
         const mensagemDiv = document.getElementById('loginMensagem');
         if (mensagemDiv) {
@@ -103,8 +110,10 @@ document.addEventListener('DOMContentLoaded', () => {
               E-mail ou senha inválidos. Tente novamente.
             </div>
           `;
-        } else {
+        } else if (typeof showToast === 'function') {
           showToast('E-mail ou senha inválidos!', 'danger');
+        } else {
+          alert('E-mail ou senha inválidos!');
         }
       }
     };
