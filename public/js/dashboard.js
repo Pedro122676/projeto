@@ -62,11 +62,13 @@ async function initDashboard() {
 
       financeiro.forEach(f => {
         const valor = parseFloat(f.valor) || 0;
+        const dataRegistro = f.data.split('T')[0]; // Extrair apenas a data
+        
         if (f.tipo === 'Receita') {
           receitas += valor;
-          if (f.data === dataHoje) receitasHoje += valor;
-          if (f.data >= dataUmaSemana) receitaSemanal += valor;
-          if (f.data >= dataMes) receitaMensal += valor;
+          if (dataRegistro === dataHoje) receitasHoje += valor;
+          if (dataRegistro >= dataUmaSemana) receitaSemanal += valor;
+          if (dataRegistro >= dataMes) receitaMensal += valor;
         } else if (f.tipo === 'Despesa') {
           despesas += valor;
         }
