@@ -36,6 +36,7 @@ const logout = () => {
   window.location.href = 'login.html';
 };
 
+// Bloqueia acesso sem login
 function bloquearSemLogin() {
   const usuarioLogado = obterUsuarioLogado();
   const estaNaLogin = window.location.pathname.includes('login.html');
@@ -45,21 +46,25 @@ function bloquearSemLogin() {
   }
 }
 
+// Controla visibilidade de elementos admin-only
 function controlarAcesso() {
   const usuario = obterUsuarioLogado();
   if (!usuario) return;
 
+  // Mostra nome e perfil no navbar
   const infoUsuario = document.getElementById('infoUsuario');
   if (infoUsuario) {
     infoUsuario.textContent = `${usuario.nome} (${usuario.perfil})`;
   }
 
+  // Esconde elementos restritos a admin
   document.querySelectorAll('.admin-only').forEach(el => {
     if (usuario.perfil !== 'admin') {
       el.style.display = 'none';
     }
   });
 
+  // Bloqueia páginas restritas
   const page = document.body.dataset.page;
   const paginasRestritasAdmin = ['administrativo', 'estoque'];
 
@@ -69,6 +74,7 @@ function controlarAcesso() {
   }
 }
 
+// Login
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('loginForm');
 
@@ -85,7 +91,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (usuarioEncontrado) {
         salvarUsuarioLogado(usuarioEncontrado);
-        window.location.href = 'index.html';
+        showToast(`Bem-vindo, ${usuarioEncontrado.nome}!`, 'success');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 800);
       } else {
         const mensagemDiv = document.getElementById('loginMensagem');
         if (mensagemDiv) {
@@ -95,12 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           `;
         } else {
-          alert('E-mail ou senha inválidos!');
+          showToast('E-mail ou senha inválidos!', 'danger');
         }
       }
     };
   }
 
+  // Executa proteções ao carregar qualquer página
   bloquearSemLogin();
   controlarAcesso();
 });

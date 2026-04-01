@@ -63,6 +63,5 @@ async function initDentistas() {
   };
 
   adicionarFiltroTabela('buscaDentista', 'listaDentistas');
-
   carregarDentistas();
 }

@@ -1,9 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   const page = document.body.dataset.page || '';
 
+  // Proteções de login e acesso
   if (typeof bloquearSemLogin === 'function') bloquearSemLogin();
   if (typeof controlarAcesso === 'function') controlarAcesso();
 
+  // Tema
   if (typeof loadSavedTheme === 'function') loadSavedTheme();
 
   const themeBtn = document.getElementById('btnThemeToggle');
@@ -11,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     themeBtn.addEventListener('click', toggleTheme);
   }
 
+  // Inicialização por página
   setTimeout(() => {
     switch (page) {
       case 'index':

@@ -2,11 +2,12 @@ async function initAdministrativo() {
   try {
     const stats = await fetchJson(`${API_URL}/stats`);
 
-    document.getElementById('adminPacientes').textContent = stats.totalPacientes;
-    document.getElementById('adminDentistas').textContent = stats.totalDentistas;
-    document.getElementById('adminConsultas').textContent = stats.totalConsultas;
-    document.getElementById('adminEstoque').textContent = stats.totalEstoque;
+    document.getElementById('adminPacientes').textContent = stats.totalPacientes || 0;
+    document.getElementById('adminDentistas').textContent = stats.totalDentistas || 0;
+    document.getElementById('adminConsultas').textContent = stats.totalConsultas || 0;
+    document.getElementById('adminEstoque').textContent = stats.totalEstoque || 0;
 
+    // Consultas por status
     const listaStatus = document.getElementById('listaStatusAdmin');
     listaStatus.innerHTML = stats.consultasPorStatus.map(s => `
       <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -15,6 +16,7 @@ async function initAdministrativo() {
       </li>
     `).join('');
 
+    // Alertas de estoque baixo
     const listaBaixo = document.getElementById('listaEstoqueBaixoAdmin');
     if (stats.estoqueBaixo.length === 0) {
       listaBaixo.innerHTML = `<li class="list-group-item text-success">✅ Nenhum alerta de estoque baixo</li>`;
@@ -26,7 +28,7 @@ async function initAdministrativo() {
       `).join('');
     }
   } catch (err) {
-    console.error('Erro ao carregar estatísticas:', err);
+    console.error('Erro ao carregar estatísticas administrativas:', err);
     showToast('Erro ao carregar dados administrativos', 'danger');
   }
 }

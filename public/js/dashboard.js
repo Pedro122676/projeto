@@ -8,12 +8,13 @@ async function initDashboard() {
   }
 
   try {
+    // Carregar consultas de hoje
     const consultas = await fetchJson(`${API_URL}/consultas`);
     const hoje = new Date().toISOString().split('T')[0];
 
     const hojeConsultas = consultas
       .filter(c => c.data === hoje)
-      .sort((a, b) => a.hora.localeCompare(b.hora)); 
+      .sort((a, b) => a.hora.localeCompare(b.hora));
 
     if (hojeConsultas.length === 0) {
       tbody.innerHTML = `
@@ -39,6 +40,7 @@ async function initDashboard() {
       `).join('');
     }
 
+    // Calcular saldo financeiro
     if (saldoEl) {
       const financeiro = await fetchJson(`${API_URL}/financeiro`);
       

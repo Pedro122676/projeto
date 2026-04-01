@@ -1,0 +1,112 @@
+:root {
+  --primary-color: #0d6efd;
+  --primary-dark: #0b5ed7;
+  
+  --bg-color: #f8f9fa;
+  --card-bg: #ffffff;
+  --text-color: #333333;
+  --text-muted: #6c757d;
+  --border-color: #dee2e6;
+  --table-header: #f8f9fa;
+  --navbar-text: #ffffff;
+}
+
+/* Tema Dark */
+[data-theme="dark"] {
+  --bg-color: #121212;
+  --card-bg: #1e1e1e;
+  --text-color: #e0e0e0;
+  --text-muted: #aaaaaa;
+  --border-color: #333333;
+  --table-header: #2a2a2a;
+  --navbar-text: #ffffff;
+}
+
+/* Estilos Gerais */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.navbar {
+  background-color: var(--primary-color) !important;
+}
+
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.table {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+.table thead th {
+  background-color: var(--table-header);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.navbar-text {
+  color: var(--navbar-text) !important;
+}
+
+/* Melhorias visuais */
+.form-control, .form-select {
+  border-radius: 8px;
+}
+
+.btn {
+  border-radius: 8px;
+}
+
+.card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+/* Toast customizado */
+.toast {
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .card,
+[data-theme="dark"] .table {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+[data-theme="dark"] .list-group-item {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+/* Responsividade extra */
+@media (max-width: 768px) {
+  .navbar-brand {
+    font-size: 1.3rem;
+  }
+  
+  .card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Badge customizado */
+.badge {
+  font-weight: 500;
+  padding: 6px 12px;
+}

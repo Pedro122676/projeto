@@ -22,7 +22,8 @@ async function initEstoque() {
         `;
       }).join('');
     } catch (e) {
-      console.error(e);
+      console.error('Erro ao carregar estoque:', e);
+      showToast('Erro ao carregar estoque', 'danger');
     }
   };
 
@@ -32,14 +33,23 @@ async function initEstoque() {
     const quantidade = parseInt(document.getElementById('quantidadeItem').value) || 0;
     const minimo = parseInt(document.getElementById('minimoItem').value) || 5;
 
-    await fetchJson(`${API_URL}/estoque`, {
-      method: 'POST',
-      body: JSON.stringify({ nome, quantidade, minimo })
-    });
+    if (!nome) {
+      showToast('Nome do item é obrigatório!', 'danger');
+      return;
+    }
 
-    showToast('Item adicionado ao estoque!', 'success');
-    form.reset();
-    carregarEstoque();
+    try {
+      await fetchJson(`${API_URL}/estoque`, {
+        method: 'POST',
+        body: JSON.stringify({ nome, quantidade, minimo })
+      });
+
+      showToast('Item adicionado ao estoque!', 'success');
+      form.reset();
+      carregarEstoque();
+    } catch (err) {
+      showToast('Erro ao adicionar item ao estoque', 'danger');
+    }
   };
 
   adicionarFiltroTabela('buscaEstoque', 'listaEstoque');

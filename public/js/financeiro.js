@@ -16,7 +16,7 @@ async function initFinanceiro() {
         </tr>
       `).join('');
     } catch (e) {
-      console.error(e);
+      console.error('Erro ao carregar financeiro:', e);
     }
   };
 
@@ -26,19 +26,23 @@ async function initFinanceiro() {
     const descricao = document.getElementById('descricaoFinanceiro').value.trim();
     const valor = parseFloat(document.getElementById('valorFinanceiro').value);
 
-    if (!descricao || isNaN(valor)) {
-      showToast('Descrição e valor são obrigatórios!', 'danger');
+    if (!descricao || isNaN(valor) || valor <= 0) {
+      showToast('Descrição e valor válido são obrigatórios!', 'danger');
       return;
     }
 
-    await fetchJson(`${API_URL}/financeiro`, {
-      method: 'POST',
-      body: JSON.stringify({ tipo, descricao, valor })
-    });
+    try {
+      await fetchJson(`${API_URL}/financeiro`, {
+        method: 'POST',
+        body: JSON.stringify({ tipo, descricao, valor })
+      });
 
-    showToast('Movimentação registrada com sucesso!', 'success');
-    form.reset();
-    carregarFinanceiro();
+      showToast('Movimentação registrada com sucesso!', 'success');
+      form.reset();
+      carregarFinanceiro();
+    } catch (err) {
+      showToast('Erro ao registrar movimentação', 'danger');
+    }
   };
 
   adicionarFiltroTabela('buscaFinanceiro', 'listaFinanceiro');

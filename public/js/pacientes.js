@@ -2,7 +2,7 @@ async function initPacientes() {
   const tbody = document.getElementById('listaPacientes');
   const form = document.getElementById('formPaciente');
 
-  // Máscaras
+  // Aplicar máscaras
   const cpfInput = document.getElementById('cpf');
   const telInput = document.getElementById('telefone');
   if (cpfInput) aplicarMascaraCPF(cpfInput);
@@ -25,23 +25,31 @@ async function initPacientes() {
         </tr>
       `).join('');
     } catch (e) {
-      console.error(e);
+      console.error('Erro ao carregar pacientes:', e);
     }
   };
 
   window.excluirPaciente = async (id) => {
     if (confirm('Deseja realmente excluir este paciente?')) {
-      await fetchJson(`${API_URL}/pacientes/${id}`, { method: 'DELETE' });
-      showToast('Paciente excluído com sucesso!', 'success');
-      carregarPacientes();
+      try {
+        await fetchJson(`${API_URL}/pacientes/${id}`, { method: 'DELETE' });
+        showToast('Paciente excluído com sucesso!', 'success');
+        carregarPacientes();
+      } catch (err) {
+        showToast('Erro ao excluir paciente', 'danger');
+      }
     }
   };
 
   form.onsubmit = async (e) => {
     e.preventDefault();
     const nome = document.getElementById('nome').value.trim();
-    const cpf = document.getElementById('cpf').value.trim();
-    const telefone = document.getElementById('telefone').value.trim();
+    let cpf = document.getElementById('cpf').value.trim();
+    let telefone = document.getElementById('telefone').value.trim();
+
+    // Remover máscaras antes de enviar
+    cpf = cpf.replace(/\D/g, '');
+    telefone = telefone.replace(/\D/g, '');
 
     if (!nome || !cpf) {
       showToast('Nome e CPF são obrigatórios!', 'danger');

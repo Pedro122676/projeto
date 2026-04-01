@@ -23,26 +23,34 @@ async function initConsultas() {
         </tr>
       `).join('');
     } catch (e) {
-      console.error(e);
+      console.error('Erro ao carregar consultas:', e);
     }
   };
 
   window.marcarRealizada = async (id) => {
     if (confirm('Marcar consulta como Realizada?')) {
-      await fetchJson(`${API_URL}/consultas/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ status: 'Realizada' })
-      });
-      showToast('Consulta marcada como realizada!', 'success');
-      carregarConsultas();
+      try {
+        await fetchJson(`${API_URL}/consultas/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ status: 'Realizada' })
+        });
+        showToast('Consulta marcada como realizada!', 'success');
+        carregarConsultas();
+      } catch (err) {
+        showToast('Erro ao atualizar status', 'danger');
+      }
     }
   };
 
   window.excluirConsulta = async (id) => {
     if (confirm('Excluir esta consulta?')) {
-      await fetchJson(`${API_URL}/consultas/${id}`, { method: 'DELETE' });
-      showToast('Consulta excluída!', 'success');
-      carregarConsultas();
+      try {
+        await fetchJson(`${API_URL}/consultas/${id}`, { method: 'DELETE' });
+        showToast('Consulta excluída!', 'success');
+        carregarConsultas();
+      } catch (err) {
+        showToast('Erro ao excluir consulta', 'danger');
+      }
     }
   };
 
@@ -59,14 +67,18 @@ async function initConsultas() {
       return;
     }
 
-    await fetchJson(`${API_URL}/consultas`, {
-      method: 'POST',
-      body: JSON.stringify({ paciente, dentista, data, hora, status })
-    });
+    try {
+      await fetchJson(`${API_URL}/consultas`, {
+        method: 'POST',
+        body: JSON.stringify({ paciente, dentista, data, hora, status })
+      });
 
-    showToast('Consulta agendada com sucesso!', 'success');
-    form.reset();
-    carregarConsultas();
+      showToast('Consulta agendada com sucesso!', 'success');
+      form.reset();
+      carregarConsultas();
+    } catch (err) {
+      showToast('Erro ao agendar consulta', 'danger');
+    }
   };
 
   adicionarFiltroTabela('buscaConsulta', 'listaConsultas');
