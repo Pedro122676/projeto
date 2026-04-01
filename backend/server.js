@@ -52,7 +52,9 @@ app.get('/api/pacientes', async (req, res) => {
 app.post('/api/pacientes', async (req, res) => {
   const { nome, cpf, telefone } = req.body;
   try {
-    if (!nome || !cpf) return res.status(400).json({ error: 'Nome e CPF são obrigatórios' });
+    if (!nome || !cpf) {
+      return res.status(400).json({ error: 'Nome e CPF são obrigatórios' });
+    }
 
     const [result] = await pool.query(
       'INSERT INTO pacientes (nome, cpf, telefone) VALUES (?, ?, ?)', 
@@ -93,17 +95,23 @@ app.get('/api/consultas', async (req, res) => {
 app.post('/api/consultas', async (req, res) => {
   const { paciente, dentista, data, hora, status } = req.body;
   try {
+    if (!paciente || !dentista || !data || !hora) {
+      return res.status(400).json({ error: 'Paciente, dentista, data e hora são obrigatórios' });
+    }
     const [result] = await pool.query(
       'INSERT INTO consultas (paciente, dentista, data, hora, status) VALUES (?, ?, ?, ?, ?)', 
       [paciente, dentista, data, hora, status || 'Agendada']
     );
-    res.json({ id: result.insertId, ...req.body });
+    res.json({ id: result.insertId, paciente, dentista, data, hora, status: status || 'Agendada' });
   } catch (err) { handleError(res, err, 'POST /api/consultas'); }
 });
 
 app.put('/api/consultas/:id', async (req, res) => {
   const { paciente, dentista, data, hora, status } = req.body;
   try {
+    if (!paciente || !dentista || !data || !hora) {
+      return res.status(400).json({ error: 'Paciente, dentista, data e hora são obrigatórios' });
+    }
     const [result] = await pool.query(
       'UPDATE consultas SET paciente = ?, dentista = ?, data = ?, hora = ?, status = ? WHERE id = ?', 
       [paciente, dentista, data, hora, status, req.params.id]
@@ -132,6 +140,9 @@ app.get('/api/dentistas', async (req, res) => {
 app.post('/api/dentistas', async (req, res) => {
   const { nome, cro, especialidade } = req.body;
   try {
+    if (!nome || !cro) {
+      return res.status(400).json({ error: 'Nome e CRO são obrigatórios' });
+    }
     const [result] = await pool.query(
       'INSERT INTO dentistas (nome, cro, especialidade) VALUES (?, ?, ?)', 
       [nome, cro, especialidade || null]
@@ -171,6 +182,9 @@ app.get('/api/estoque', async (req, res) => {
 app.post('/api/estoque', async (req, res) => {
   const { nome, quantidade, minimo } = req.body;
   try {
+    if (!nome) {
+      return res.status(400).json({ error: 'Nome do item é obrigatório' });
+    }
     const [result] = await pool.query(
       'INSERT INTO estoque (nome, quantidade, minimo) VALUES (?, ?, ?)', 
       [nome, quantidade || 0, minimo || 5]
@@ -210,6 +224,12 @@ app.get('/api/financeiro', async (req, res) => {
 app.post('/api/financeiro', async (req, res) => {
   const { tipo, descricao, valor } = req.body;
   try {
+    if (!tipo || !descricao || !valor) {
+      return res.status(400).json({ error: 'Tipo, descrição e valor são obrigatórios' });
+    }
+    if (isNaN(valor) || valor <= 0) {
+      return res.status(400).json({ error: 'Valor deve ser um número positivo' });
+    }
     const [result] = await pool.query(
       'INSERT INTO financeiro (tipo, descricao, valor, data) VALUES (?, ?, ?, CURDATE())', 
       [tipo, descricao, valor]
